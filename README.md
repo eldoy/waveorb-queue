@@ -49,7 +49,7 @@ queue.add(name, data, options)
 
 ### Time options
 
-Time options are human readable, here are some examples:
+The time options DSL are human readable, here are some examples:
 
 ##### Start
 
@@ -64,8 +64,10 @@ Time options are human readable, here are some examples:
 
 * `every monday at 04`
 * `every friday at 03:00 and 19:30`
-* `every friday at 03:00 and every sunday at 04 and every saturday at 10:30:30`
+* `every friday at 03:00, sunday at 04, saturday at 10:30:30`
 * `every 10 seconds`
+* `monday to friday at 04`
+* `monday, tuesday, wednesday, friday at 04`
 
 Clocks are 24 hours. You can specify hours, minutes and seconds: `HH:MM:SS`.
 
