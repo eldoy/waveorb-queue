@@ -18,7 +18,7 @@ npm i waveorb-queue
 ```js
 // Setup db
 var mongodb = require('mongowave')
-var db = await mongodb('queue')
+var db = await mongodb('firmalisten')
 
 // Queue config, needs a db
 var config = { db }
