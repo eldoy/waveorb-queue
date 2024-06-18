@@ -54,7 +54,10 @@ Time options are human readable, here are some examples:
 ##### Start
 
 * `now`
+* `10 seconds from now`
 * `24 hours from now`
+* `5 days from now`
+* `1 week from now`
 * `next friday at 23:00`
 
 ##### Repeat
