@@ -4,14 +4,33 @@ async function wait(s) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000))
 }
 
+async function add(queue, collection) {
+  var data = { test: '1' }
+  var options = { start: 'now' }
+  await queue.add(collection, data, options)
+
+  data = { test: '2' }
+  options = { start: 'now', repeat: 'every tuesday at 12' }
+  await queue.add(collection, data, options)
+
+  data = { test: '3' }
+  options = { start: '30 seconds from now', repeat: 'every 10 seconds' }
+  await queue.add(collection, data, options)
+}
+
 async function test() {
   var db = await mongowave('waveorb-queue-dev')
-  var queue = require('./index.js')({ db })
+  var queue = require('./index.js')({ db, interval: 0.1 })
   var collection = 'test'
 
   // cleanup
   await db(collection).delete()
   await db(`${collection}-job`).delete()
+  await db('job').delete()
+  await db('job-history').delete()
+
+  // test: before listen
+  // await add(queue, collection)
 
   // listen
   await queue.listen(collection, async function (data, options) {
@@ -23,18 +42,8 @@ async function test() {
   // why?
   await wait(0)
 
-  // test
-  var data = { test: '1' }
-  var options = { start: 'now' }
-  await queue.add(collection, data, options)
-
-  data = { test: '2' }
-  options = { start: 'now', repeat: 'every tuesday at 12' }
-  await queue.add(collection, data, options)
-
-  data = { test: '3' }
-  options = { start: '30 seconds from now', repeat: 'every 30 seconds' }
-  await queue.add(collection, data, options)
+  // test: after listen
+  await add(queue, collection)
 }
 
 test()
