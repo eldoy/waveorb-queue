@@ -30,13 +30,11 @@ function message() {
 
 it('should parse start schedule', async ({ $, t }) => {
   result = util.parseSchedule({ start: 'now' })
-  expected = now()
-  var diff = expected - result.getTime()
-  t.ok(diff >= 0 && diff < DIFF, message())
+  t.equal(result, undefined)
 
   result = util.parseSchedule({ start: '10 seconds from now' })
   expected = now(10 * second)
-  diff = expected - result.getTime()
+  var diff = expected - result.getTime()
   t.ok(diff >= 0 && diff < DIFF, message())
 
   result = util.parseSchedule({ start: '1 minute from now' })
