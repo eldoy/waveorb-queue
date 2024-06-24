@@ -21,9 +21,8 @@ it('should add', async ({ $, t }) => {
 
   result = await queue.add(name, data, options)
 
-  t.equal(Object.keys(result).length, 6)
+  t.equal(Object.keys(result).length, 5)
   t.equal(typeof result.id, 'string')
-  t.equal(result.status.length, 1)
   t.deepStrictEqual(result.payload, data)
   t.deepStrictEqual(result.options, options)
   t.equal(typeof result.created_at.getTime, 'function')
@@ -34,9 +33,8 @@ it('should add', async ({ $, t }) => {
 
   result = result[0]
 
-  t.equal(Object.keys(result).length, 6)
+  t.equal(Object.keys(result).length, 5)
   t.equal(typeof result.id, 'string')
-  t.equal(result.status.length, 1)
   t.deepStrictEqual(result.payload, data)
   t.deepStrictEqual(result.options, options)
   t.equal(typeof result.created_at.getTime, 'function')
