@@ -17,18 +17,20 @@ function getStatus(status, options, error) {
 }
 
 module.exports = function (config = {}) {
-  var { db, interval = 10 } = config
+  var { db, interval = 10, silent } = config
 
   function log(message, collection, id) {
-    if (collection) {
-      var now = new Date()
-      var info = `timestamp: ${now.toISOString()}, collection: ${collection}`
-      if (id) {
-        info = `${info}, id: ${id}`
+    if (!silent) {
+      if (collection) {
+        var now = new Date()
+        var info = `timestamp: ${now.toISOString()}, collection: ${collection}`
+        if (id) {
+          info = `${info}, id: ${id}`
+        }
+        console.log(`${message} (${info})`)
+      } else {
+        console.log(message)
       }
-      console.log(`${message} (${info})`)
-    } else {
-      console.log(message)
     }
   }
 
