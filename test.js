@@ -24,8 +24,6 @@ async function test() {
   var collection = 'test'
 
   // cleanup
-  await db(collection).delete()
-  await db(`${collection}-job`).delete()
   await db('job').delete()
   await db('job-history').delete()
 
