@@ -1,21 +1,21 @@
 {
-  "name": "waveorb-queue",
+  "name": "waveorb-scheduler",
   "version": "0.1.0",
-  "description": "Waveorb queue",
+  "description": "Waveorb scheduler",
   "main": "index.js",
   "scripts": {
     "test": "nodemon -q --exec spekk"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eldoy/waveorb-queue.git"
+    "url": "git+https://github.com/eldoy/waveorb-scheduler.git"
   },
   "author": "Vidar Eldøy <vidar@eldoy.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/eldoy/waveorb-queue/issues"
+    "url": "https://github.com/eldoy/waveorb-scheduler/issues"
   },
-  "homepage": "https://github.com/eldoy/waveorb-queue#readme",
+  "homepage": "https://github.com/eldoy/waveorb-scheduler#readme",
   "devDependencies": {
     "mongowave": "^0.12.0",
     "spekk": "^0.2.2"
