@@ -20,7 +20,7 @@ async function add(queue, collection) {
 
 async function test() {
   var db = await mongowave('waveorb-queue-dev')
-  var queue = require('./index.js')({ db, interval: 0.1 })
+  var queue = require('./index.js')({ db })
   var collection = 'test'
 
   // cleanup
