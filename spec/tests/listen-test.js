@@ -1,87 +1,145 @@
-var queue
-var name = 'test'
+var queue = 'test'
 
 async function wait(s) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000))
 }
 
-setup(async function ({ $ }) {
-  queue = require('../../index.js')({ db: $.db, interval: 1, silent: true })
+async function listen($, calls) {
+  var { pre = [], post = [] } = calls
 
-  await $.db(name).delete()
-  await $.db(`${name}-job`).delete()
-})
-
-async function listen(callback) {
   var processed = []
 
-  await new Promise(async (resolve, reject) => {
-    await queue.listen(name, async function (data, options) {
-      processed.push({ data, options, timestamp: new Date() })
-      if (data.last) resolve()
+  for (var call of pre) {
+    await call()
+  }
+
+  await new Promise(async (resolve) => {
+    await $.queue.listen(queue, async function (data, options) {
+      processed.push({ data, options })
+      if (processed.length == pre.length + post.length) resolve()
     })
     await wait(0)
-    await callback()
+
+    for (var call of post) {
+      await call()
+      await wait(0)
+    }
   })
-  await wait(1)
+  await wait(0.1)
 
   return processed
 }
 
-it('should listen queue', async ({ $, t }) => {
-  var result = await listen(async function () {
-    await queue.add(name, { test: '1' }, { start: 'now' })
-    await queue.add(
-      name,
-      { test: '2' },
-      { start: 'now', repeat: 'every tuesday at 12' }
-    )
-    await queue.add(
-      name,
-      { test: '3', last: true },
-      { start: '5 seconds from now', repeat: 'every 30 seconds' }
-    )
+setup(async function ({ $ }) {
+  await $.db('job').delete()
+  await $.db('job-history').delete()
+})
+
+it('should listen to queue', async ({ $, t }) => {
+  var result = await listen($, {
+    pre: [() => $.queue.add(queue, { test: '0' }, { start: 'now' })],
+    post: [
+      () => $.queue.add(queue, { test: '1' }, { start: 'now' }),
+      () =>
+        $.queue.add(
+          queue,
+          { test: '2' },
+          { start: 'now', repeat: 'every tuesday at 12' }
+        ),
+      () =>
+        $.queue.add(
+          queue,
+          { test: '3' },
+          { start: '2 seconds from now', repeat: 'every 10 seconds' }
+        )
+    ]
   })
-  t.equal(result.length, 3)
+  t.equal(result.length, 4)
 
   // callback check
-  var [t1, t2, t3] = result
+  var [t0, t1, t2, t3] = result.sort(
+    (a, b) => parseInt(a.data.test) - parseInt(b.data.test)
+  )
+
+  // test 0
+  t.deepStrictEqual(t0.data, { test: '0' })
+  t.deepStrictEqual(t0.options, { start: 'now' })
 
   // test 1
   t.deepStrictEqual(t1.data, { test: '1' })
   t.deepStrictEqual(t1.options, { start: 'now' })
-  t.equal(typeof t1.timestamp.getTime, 'function')
 
   // test 2
   t.deepStrictEqual(t2.data, { test: '2' })
   t.deepStrictEqual(t2.options, { start: 'now', repeat: 'every tuesday at 12' })
-  t.equal(typeof t2.timestamp.getTime, 'function')
 
   // test 3
-  t.deepStrictEqual(t3.data, { test: '3', last: true })
+  t.deepStrictEqual(t3.data, { test: '3' })
   t.deepStrictEqual(t3.options, {
-    start: '5 seconds from now',
-    repeat: 'every 30 seconds'
+    start: '2 seconds from now',
+    repeat: 'every 10 seconds'
   })
-  t.equal(typeof t3.timestamp.getTime, 'function')
 
-  // db check
-  var result = await $.db(`${name}-job`).find()
-  t.equal(result.length, 5)
+  // job check
+  var jobs = await $.db('job').find()
+  t.equal(jobs.length, 2)
 
-  // test 1
-  var jobs = result.filter(({ source }) => source.payload.test == '1')
+  var [j1, j2] = jobs.sort(
+    (a, b) => parseInt(a.payload.test) - parseInt(b.payload.test)
+  )
+
+  // test 2
+  t.equal(j1.payload.test, '2')
+  t.equal(j1.status.length, 1)
+  t.equal(j1.status[0].status, 'enqueued')
+  t.equal(typeof j1.status[0].schedule.getTime, 'function')
+
+  // test 3
+  t.equal(j2.payload.test, '3')
+  t.equal(j2.status.length, 1)
+  t.equal(j2.status[0].status, 'enqueued')
+  t.equal(typeof j2.status[0].schedule.getTime, 'function')
+
+  // job-history check
+  var result = await $.db('job-history').find()
+  t.equal(result.length, 4)
+
+  // test 0
+  var jobs = result.filter(({ payload }) => payload.test == '0')
   t.equal(jobs.length, 1)
 
   var [j1] = jobs
 
-  // test 1 - job 1
   t.equal(j1.status.length, 3)
 
   var [s3, s2, s1] = j1.status
   t.equal(s1.status, 'enqueued')
   t.equal(typeof s1.timestamp.getTime, 'function')
-  t.equal(s1.schedule, undefined)
+  t.equal(typeof s1.schedule.getTime, 'function')
+  t.equal(s1.error, undefined)
+
+  t.equal(s2.status, 'processing')
+  t.equal(typeof s2.timestamp.getTime, 'function')
+  t.equal(s2.schedule, null)
+  t.equal(s2.error, null)
+
+  t.equal(s3.status, 'processed')
+  t.equal(typeof s3.timestamp.getTime, 'function')
+  t.equal(s3.schedule, null)
+  t.equal(s3.error, null)
+
+  // test 1
+  var jobs = result.filter(({ payload }) => payload.test == '1')
+  t.equal(jobs.length, 1)
+
+  var [j1] = jobs
+
+  t.equal(j1.status.length, 3)
+
+  var [s3, s2, s1] = j1.status
+  t.equal(s1.status, 'enqueued')
+  t.equal(typeof s1.timestamp.getTime, 'function')
+  t.equal(typeof s1.schedule.getTime, 'function')
   t.equal(s1.error, undefined)
 
   t.equal(s2.status, 'processing')
@@ -95,18 +153,17 @@ it('should listen queue', async ({ $, t }) => {
   t.equal(s3.error, null)
 
   // test 2
-  var jobs = result.filter(({ source }) => source.payload.test == '2')
-  t.equal(jobs.length, 2)
+  var jobs = result.filter(({ payload }) => payload.test == '2')
+  t.equal(jobs.length, 1)
 
-  var [j1, j2] = jobs
+  var [j1] = jobs
 
-  // test 2 - job 1
   t.equal(j1.status.length, 3)
 
   var [s3, s2, s1] = j1.status
   t.equal(s1.status, 'enqueued')
   t.equal(typeof s1.timestamp.getTime, 'function')
-  t.equal(s1.schedule, undefined)
+  t.equal(typeof s1.schedule.getTime, 'function')
   t.equal(s1.error, undefined)
 
   t.equal(s2.status, 'processing')
@@ -118,23 +175,13 @@ it('should listen queue', async ({ $, t }) => {
   t.equal(typeof s3.timestamp.getTime, 'function')
   t.equal(s3.schedule, null)
   t.equal(s3.error, null)
-
-  // test 2 - job 2
-  t.equal(j2.status.length, 1)
-
-  var [s1] = j2.status
-  t.equal(s1.status, 'enqueued')
-  t.equal(typeof s1.timestamp.getTime, 'function')
-  t.equal(typeof s1.schedule.getTime, 'function')
-  t.equal(s1.error, undefined)
 
   // test 3
-  var jobs = result.filter(({ source }) => source.payload.test == '3')
-  t.equal(jobs.length, 2)
+  var jobs = result.filter(({ payload }) => payload.test == '3')
+  t.equal(jobs.length, 1)
 
-  var [j1, j2] = jobs
+  var [j1] = jobs
 
-  // test 3 - job 1
   t.equal(j1.status.length, 3)
 
   var [s3, s2, s1] = j1.status
@@ -152,13 +199,4 @@ it('should listen queue', async ({ $, t }) => {
   t.equal(typeof s3.timestamp.getTime, 'function')
   t.equal(s3.schedule, null)
   t.equal(s3.error, null)
-
-  // test 3 - job 2
-  t.equal(j2.status.length, 1)
-
-  var [s1] = j2.status
-  t.equal(s1.status, 'enqueued')
-  t.equal(typeof s1.timestamp.getTime, 'function')
-  t.equal(typeof s1.schedule.getTime, 'function')
-  t.equal(s1.error, undefined)
 })
