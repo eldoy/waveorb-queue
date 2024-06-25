@@ -10,7 +10,7 @@ async function add(queue, collection) {
   await queue.add(collection, data, options)
 
   data = { test: '2' }
-  options = { start: 'now', repeat: 'every tuesday at 12' }
+  options = { start: 'now', repeat: 'every tuesday at 13:30' }
   await queue.add(collection, data, options)
 
   data = { test: '3' }

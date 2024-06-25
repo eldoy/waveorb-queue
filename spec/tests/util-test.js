@@ -18,7 +18,17 @@ function now(diff = 0) {
 function next(day = 0, h = 0, m = 0, s = 0) {
   var now = new Date()
   now.setDate(now.getDate() + ((day + (7 - now.getDay())) % 7))
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, s)
+  now.setHours(h)
+  now.setMinutes(m)
+  now.setSeconds(s)
+  now.setMilliseconds(0)
+
+  var diff = now - new Date()
+  if (diff < 0) {
+    now.setDate(now.getDate() + 7)
+  }
+
+  return now
 }
 
 function message() {
@@ -59,8 +69,8 @@ it('should parse start schedule', async ({ $, t }) => {
   diff = expected - result.getTime()
   t.ok(diff >= 0 && diff < DIFF, message())
 
-  result = util.parseSchedule({ start: 'next friday at 23:00' })
-  expected = next(5, 23)
+  result = util.parseSchedule({ start: 'next tuesday at 12:00' })
+  expected = next(2, 12)
   t.equal(expected.getTime(), result.getTime())
 })
 
