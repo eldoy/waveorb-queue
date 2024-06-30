@@ -7,6 +7,19 @@ Schedule jobs for running in the background.
 * MongoDB
 * [Mongowave](https://github.com/eldoy/mongowave)
 
+The mongodb instance you're using must be set up as a replica set to be able to watch for changes.
+
+Add the `--replSet` option to your mongodb config:
+
+```
+mongod --replSet rs0 ...
+```
+
+Then log into your mongodb instance with `mongo` and run `rs.initiate()`.
+
+[Read more here &raquo;](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/)
+
+
 ### Install
 
 ```
