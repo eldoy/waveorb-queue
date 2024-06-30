@@ -1,4 +1,4 @@
-var queue = 'test'
+var scheduleName = 'test'
 
 setup(async function ({ $ }) {
   await $.db('job').delete()
@@ -16,11 +16,11 @@ it('should add job to queue', async ({ $, t }) => {
 
   var data = { from: 'from', to: 'to' }
   var options = { start: 'now', repeat: 'every tuesday at 12' }
-  result = await $.scheduler.add(queue, data, options)
+  result = await $.scheduler.add(scheduleName, data, options)
 
   t.equal(Object.keys(result).length, 7)
   t.equal(typeof result.id, 'string')
-  t.equal(result.name, queue)
+  t.equal(result.name, scheduleName)
   t.deepStrictEqual(result.payload, data)
   t.deepStrictEqual(result.options, options)
   t.equal(result.status.length, 1)
@@ -35,7 +35,7 @@ it('should add job to queue', async ({ $, t }) => {
   t.deepStrictEqual(result, jobs[0])
 
   t.rejects(
-    async () => $.scheduler.add(queue, data, options),
+    async () => $.scheduler.add(scheduleName, data, options),
     new Error('Job already exists')
   )
 })

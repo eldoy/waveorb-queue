@@ -1,4 +1,4 @@
-var queue = 'test'
+var scheduleName = 'test'
 
 async function wait(s) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000))
@@ -14,7 +14,7 @@ async function listen($, calls) {
   }
 
   await new Promise(async (resolve) => {
-    await $.scheduler.listen(queue, async function (data, options) {
+    await $.scheduler.listen(scheduleName, async function (data, options) {
       processed.push({ data, options })
       if (processed.length == pre.length + post.length) resolve()
     })
@@ -35,20 +35,20 @@ setup(async function ({ $ }) {
   await $.db('job-history').delete()
 })
 
-it('should listen to queue', async ({ $, t }) => {
+it('should listen to scheduler', async ({ $, t }) => {
   var result = await listen($, {
-    pre: [() => $.scheduler.add(queue, { test: '0' }, { start: 'now' })],
+    pre: [() => $.scheduler.add(scheduleName, { test: '0' }, { start: 'now' })],
     post: [
-      () => $.scheduler.add(queue, { test: '1' }, { start: 'now' }),
+      () => $.scheduler.add(scheduleName, { test: '1' }, { start: 'now' }),
       () =>
         $.scheduler.add(
-          queue,
+          scheduleName,
           { test: '2' },
           { start: 'now', repeat: 'every tuesday at 12' }
         ),
       () =>
         $.scheduler.add(
-          queue,
+          scheduleName,
           { test: '3' },
           { start: '2 seconds from now', repeat: 'every 10 seconds' }
         )
