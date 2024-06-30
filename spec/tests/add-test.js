@@ -5,10 +5,10 @@ setup(async function ({ $ }) {
 })
 
 it('should add job to queue', async ({ $, t }) => {
-  var result = await $.queue.add()
+  var result = await $.scheduler.add()
   t.equal(result, null)
 
-  result = await $.queue.add('')
+  result = await $.scheduler.add('')
   t.equal(result, null)
 
   result = await $.db('job').find()
@@ -16,7 +16,7 @@ it('should add job to queue', async ({ $, t }) => {
 
   var data = { from: 'from', to: 'to' }
   var options = { start: 'now', repeat: 'every tuesday at 12' }
-  result = await $.queue.add(queue, data, options)
+  result = await $.scheduler.add(queue, data, options)
 
   t.equal(Object.keys(result).length, 7)
   t.equal(typeof result.id, 'string')
@@ -35,7 +35,7 @@ it('should add job to queue', async ({ $, t }) => {
   t.deepStrictEqual(result, jobs[0])
 
   t.rejects(
-    async () => $.queue.add(queue, data, options),
+    async () => $.scheduler.add(queue, data, options),
     new Error('Job already exists')
   )
 })

@@ -14,7 +14,7 @@ async function listen($, calls) {
   }
 
   await new Promise(async (resolve) => {
-    await $.queue.listen(queue, async function (data, options) {
+    await $.scheduler.listen(queue, async function (data, options) {
       processed.push({ data, options })
       if (processed.length == pre.length + post.length) resolve()
     })
@@ -37,17 +37,17 @@ setup(async function ({ $ }) {
 
 it('should listen to queue', async ({ $, t }) => {
   var result = await listen($, {
-    pre: [() => $.queue.add(queue, { test: '0' }, { start: 'now' })],
+    pre: [() => $.scheduler.add(queue, { test: '0' }, { start: 'now' })],
     post: [
-      () => $.queue.add(queue, { test: '1' }, { start: 'now' }),
+      () => $.scheduler.add(queue, { test: '1' }, { start: 'now' }),
       () =>
-        $.queue.add(
+        $.scheduler.add(
           queue,
           { test: '2' },
           { start: 'now', repeat: 'every tuesday at 12' }
         ),
       () =>
-        $.queue.add(
+        $.scheduler.add(
           queue,
           { test: '3' },
           { start: '2 seconds from now', repeat: 'every 10 seconds' }
