@@ -17,7 +17,7 @@ mongod --replSet rs0 ...
 
 Then log into your mongodb instance with `mongo` and run `rs.initiate()`.
 
-[Read more here &raquo;](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/)
+[More info on MongoDB setup here &raquo;](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/)
 
 
 ### Install
