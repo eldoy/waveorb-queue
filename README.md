@@ -1,6 +1,6 @@
-# Waveorb Queue
+# Waveorb Scheduler
 
-Enqueue jobs for running in the background.
+Schedule jobs for running in the background.
 
 ### Requirements
 
@@ -10,7 +10,7 @@ Enqueue jobs for running in the background.
 ### Install
 
 ```
-npm i waveorb-queue
+npm i waveorb-scheduler
 ```
 
 ### Usage
@@ -20,31 +20,31 @@ npm i waveorb-queue
 var mongodb = require('mongowave')
 var db = await mongodb('firmalisten')
 
-// Queue config, needs a db
+// Scheduler config, needs a db
 var config = { db }
 
-// Create queue
-var queue = require('waveorb-queue')(config)
+// Create scheduler
+var scheduler = require('waveorb-scheduler')(config)
 
-// Queue name
+// Scheduler name
 var name = 'mail'
 
-// Queue data
+// Scheduler data
 var data = { from: 'mail@example.com', to: 'post@example.com' }
 
-// Queue options
+// Scheduler options
 var options = {
   start: 'now',
   repeat: 'every tuesday at 12'
 }
 
 // Listen for changes
-queue.listen(name, async function(data, options) {
+scheduler.listen(name, async function(data, options) {
   // Send email
 })
 
-// Add item to queue
-queue.add(name, data, options)
+// Add job to scheduler
+scheduler.add(name, data, options)
 ```
 
 ### Time options
