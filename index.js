@@ -1,6 +1,6 @@
 module.exports = function (config = {}) {
   var log = require('./lib/log.js')(config)
-  var { add, schedule } = require('./lib/job.js')(config)
+  var { create, schedule } = require('./lib/job.js')(config)
 
   var { db } = config
 
@@ -11,7 +11,7 @@ module.exports = function (config = {}) {
       if (job) {
         throw Error('Job already exists')
       }
-      return add({ name, payload: data, options })
+      return create({ name, payload: data, options })
     },
     listen: async function (name, callback) {
       if (!name) return
